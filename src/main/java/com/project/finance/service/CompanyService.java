@@ -47,7 +47,7 @@ public class CompanyService {
 
         Company savedCompany = companyRepository.save(new Company(resultDto));
         List<Dividend> list = scrapResult.getDividendList().stream()
-                .map(e -> new Dividend(savedCompany, e))
+                .map(dto -> new Dividend(savedCompany, dto))
                 .toList();
         dividendRepository.saveAll(list);
 

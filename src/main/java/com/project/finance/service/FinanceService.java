@@ -30,9 +30,9 @@ public class FinanceService {
 
         List<Dividend> dividends = dividendRepository.findAllByCompany(company);
         List<DividendDto> dividendDtoList = dividends.stream()
-                .map(e -> DividendDto.builder()
-                        .date(e.getDate())
-                        .dividend(e.getDividend())
+                .map(entity -> DividendDto.builder()
+                        .date(entity.getDate())
+                        .dividend(entity.getDividend())
                         .build())
                 .toList();
 

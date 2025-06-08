@@ -37,6 +37,17 @@ public class CompanyService {
         return companyRepository.findAll(pageable);
     }
 
+    public String deleteCompany(String ticker) {
+        Company deletedCompany = companyRepository.findByTicker(ticker)
+                .orElseThrow(() -> new RuntimeException("company not found"));
+
+        dividendRepository.deleteAllByCompany(deletedCompany);
+        companyRepository.delete(deletedCompany);
+        deleteAutoCompleteKeyword(deletedCompany.getName());
+
+        return deletedCompany.getName();
+    }
+
     private CompanyDto storeCompanyAndDividend(String ticker) {
         CompanyDto resultDto = scraper.scrapCompanyByTicker(ticker);
         if (resultDto == null) {

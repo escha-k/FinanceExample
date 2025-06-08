@@ -1,5 +1,6 @@
 package com.project.finance.service;
 
+import com.project.finance.constants.CacheKey;
 import com.project.finance.domain.Company;
 import com.project.finance.domain.Dividend;
 import com.project.finance.dto.CompanyDto;
@@ -8,10 +9,13 @@ import com.project.finance.dto.ScrapResult;
 import com.project.finance.repository.CompanyRepository;
 import com.project.finance.repository.DividendRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FinanceService {
@@ -19,7 +23,9 @@ public class FinanceService {
     private final CompanyRepository companyRepository;
     private final DividendRepository dividendRepository;
 
+    @Cacheable(key = "#companyName", value = CacheKey.KEY_FINANCE)
     public ScrapResult getDividendByCompanyName(String companyName) {
+        log.info("search company: {}", companyName);
 
         Company company = companyRepository.findByName(companyName)
                 .orElseThrow(() -> new IllegalArgumentException("Company not found"));

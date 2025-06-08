@@ -1,5 +1,6 @@
 package com.project.finance.scheduler;
 
+import com.project.finance.constants.CacheKey;
 import com.project.finance.domain.Company;
 import com.project.finance.domain.Dividend;
 import com.project.finance.dto.CompanyDto;
@@ -9,6 +10,8 @@ import com.project.finance.repository.DividendRepository;
 import com.project.finance.scraper.Scraper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@EnableCaching
 @RequiredArgsConstructor
 public class ScraperScheduler {
 
@@ -23,6 +27,7 @@ public class ScraperScheduler {
     private final DividendRepository dividendRepository;
     private final Scraper scraper;
 
+    @CacheEvict(value = CacheKey.KEY_FINANCE, allEntries = true)
     @Scheduled(cron = "${scheduler.scrap.yahoo}")
     public void scrapScheduling() {
         log.info("scrapping scheduler started");

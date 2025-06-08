@@ -25,6 +25,8 @@ public class AuthController {
     public ResponseEntity<Member> signUp(@RequestBody AuthDto.SignUp request) {
         Member result = memberService.register(request);
 
+        log.info("new user registered: {}", result.getUsername());
+
         return ResponseEntity.ok(result);
     }
 
@@ -33,6 +35,8 @@ public class AuthController {
         Member member = memberService.authenticate(request);
         log.info("roles: {}", member.getRoles());
         String token = tokenProvider.generateToken(member.getUsername(), member.getRoles());
+
+        log.info("user login: {}", request.getUsername());
 
         return ResponseEntity.ok(token);
     }

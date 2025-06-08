@@ -11,6 +11,7 @@ import com.project.finance.repository.CompanyRepository;
 import com.project.finance.repository.DividendRepository;
 import com.project.finance.scraper.Scraper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.Trie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
@@ -33,7 +35,11 @@ public class CompanyService {
             throw new AlreadyExistsCompanyException();
         }
 
-        return storeCompanyAndDividend(ticker);
+        CompanyDto companyDto = storeCompanyAndDividend(ticker);
+
+        log.info("insert new company info: {}", companyDto.getName());
+
+        return companyDto;
     }
 
     public Page<Company> findAll(Pageable pageable) {
@@ -48,7 +54,21 @@ public class CompanyService {
         companyRepository.delete(deletedCompany);
         deleteAutoCompleteKeyword(deletedCompany.getName());
 
+        log.info("delete company info: {}", deletedCompany.getName());
+
         return deletedCompany.getName();
+    }
+
+    public void addAutoCompleteKeyword(String keyword) {
+        trie.put(keyword, null);
+    }
+
+    public List<String> autoComplete(String keyword) {
+        return trie.prefixMap(keyword).keySet().stream().toList();
+    }
+
+    public void deleteAutoCompleteKeyword(String keyword) {
+        trie.remove(keyword);
     }
 
     private CompanyDto storeCompanyAndDividend(String ticker) {
@@ -66,17 +86,5 @@ public class CompanyService {
         dividendRepository.saveAll(list);
 
         return resultDto;
-    }
-
-    public void addAutoCompleteKeyword(String keyword) {
-        trie.put(keyword, null);
-    }
-
-    public List<String> autoComplete(String keyword) {
-        return trie.prefixMap(keyword).keySet().stream().toList();
-    }
-
-    public void deleteAutoCompleteKeyword(String keyword) {
-        trie.remove(keyword);
     }
 }

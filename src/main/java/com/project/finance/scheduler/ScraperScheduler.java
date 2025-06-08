@@ -49,6 +49,7 @@ public class ScraperScheduler {
                     .forEach(entity -> {
                         if (!dividendRepository.existsByCompanyAndDate(company, entity.getDate())) {
                             dividendRepository.save(entity);
+                            log.info("insert new dividend: {}", entity);
                         }
                     });
 

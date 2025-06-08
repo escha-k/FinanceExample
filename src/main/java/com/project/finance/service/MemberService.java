@@ -34,7 +34,14 @@ public class MemberService implements UserDetailsService {
         return memberRepository.save(memberDto.toEntity());
     }
 
-    public Member authenticate() {
-        return null;
+    public Member authenticate(AuthDto.SignIn memberDto) {
+        Member member = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("could not find user: " + memberDto.getUsername()));
+
+        if (!passwordEncoder.matches(memberDto.getPassword(), member.getPassword())) {
+            throw new RuntimeException("password does not match");
+        }
+
+        return member;
     }
 }

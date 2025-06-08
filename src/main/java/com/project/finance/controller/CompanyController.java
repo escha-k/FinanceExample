@@ -8,6 +8,8 @@ import org.apache.commons.collections4.Trie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +24,7 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @GetMapping
+    @PreAuthorize("hasRole('READ')")
     public ResponseEntity<Page<Company>> getCompanies(final Pageable pageable) {
         Page<Company> companies = companyService.findAll(pageable);
 
@@ -35,7 +38,9 @@ public class CompanyController {
         return ResponseEntity.ok(result);
     }
 
+
     @PostMapping
+    @PreAuthorize("hasRole('WRITE')")
     public ResponseEntity<CompanyDto> postCompany(@RequestBody CompanyDto companyDto) {
         String ticker = companyDto.getTicker();
         if (ticker.isEmpty()) {

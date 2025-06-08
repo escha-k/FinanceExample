@@ -4,6 +4,9 @@ import com.project.finance.domain.Company;
 import com.project.finance.domain.Dividend;
 import com.project.finance.dto.CompanyDto;
 import com.project.finance.dto.ScrapResult;
+import com.project.finance.exception.impl.AlreadyExistsCompanyException;
+import com.project.finance.exception.impl.InvalidTickerException;
+import com.project.finance.exception.impl.NoCompanyException;
 import com.project.finance.repository.CompanyRepository;
 import com.project.finance.repository.DividendRepository;
 import com.project.finance.scraper.Scraper;
@@ -27,7 +30,7 @@ public class CompanyService {
 
     public CompanyDto save(String ticker) {
         if (companyRepository.existsByTicker(ticker)) {
-            throw new RuntimeException("company already exists");
+            throw new AlreadyExistsCompanyException();
         }
 
         return storeCompanyAndDividend(ticker);
@@ -39,7 +42,7 @@ public class CompanyService {
 
     public String deleteCompany(String ticker) {
         Company deletedCompany = companyRepository.findByTicker(ticker)
-                .orElseThrow(() -> new RuntimeException("company not found"));
+                .orElseThrow(NoCompanyException::new);
 
         dividendRepository.deleteAllByCompany(deletedCompany);
         companyRepository.delete(deletedCompany);
@@ -51,7 +54,7 @@ public class CompanyService {
     private CompanyDto storeCompanyAndDividend(String ticker) {
         CompanyDto resultDto = scraper.scrapCompanyByTicker(ticker);
         if (resultDto == null) {
-            throw new RuntimeException("failed to scrap company by ticker: " + ticker);
+            throw new InvalidTickerException(ticker);
         }
 
         ScrapResult scrapResult = scraper.scrap(resultDto);

@@ -2,6 +2,9 @@ package com.project.finance.service;
 
 import com.project.finance.domain.Member;
 import com.project.finance.dto.AuthDto;
+import com.project.finance.exception.impl.AlreadyExistsUserException;
+import com.project.finance.exception.impl.PasswordNotMatchException;
+import com.project.finance.exception.impl.UserNotFoundException;
 import com.project.finance.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +30,7 @@ public class MemberService implements UserDetailsService {
 
     public Member register(AuthDto.SignUp memberDto) {
         if (memberRepository.existsByUsername(memberDto.getUsername())) {
-            throw new RuntimeException("username already exists");
+            throw new AlreadyExistsUserException();
         }
 
         memberDto.setPassword(passwordEncoder.encode(memberDto.getPassword()));
@@ -36,10 +39,10 @@ public class MemberService implements UserDetailsService {
 
     public Member authenticate(AuthDto.SignIn memberDto) {
         Member member = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("could not find user: " + memberDto.getUsername()));
+                .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(memberDto.getPassword(), member.getPassword())) {
-            throw new RuntimeException("password does not match");
+            throw new PasswordNotMatchException();
         }
 
         return member;

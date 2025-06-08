@@ -4,6 +4,9 @@ import com.project.finance.constants.Month;
 import com.project.finance.dto.CompanyDto;
 import com.project.finance.dto.DividendDto;
 import com.project.finance.dto.ScrapResult;
+import com.project.finance.exception.impl.InvalidTickerException;
+import com.project.finance.exception.impl.ScrapErrorException;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class YahooFinanceScraper implements Scraper {
 
@@ -51,7 +55,8 @@ public class YahooFinanceScraper implements Scraper {
                 String dividend =splits[3];
 
                 if (month < 0) {
-                    throw new IllegalArgumentException("Invalid month: " + month);
+                    log.error("유효하지 않은 month 입니다: {}", month);
+                    throw new ScrapErrorException();
                 }
 
                 DividendDto dividendDto = DividendDto.builder()
@@ -63,8 +68,7 @@ public class YahooFinanceScraper implements Scraper {
 
             scrapResult.setDividendList(list);
         } catch (IOException | NullPointerException e) {
-            // TODO : 스크랩 실패 시 예외 처리
-            throw new RuntimeException(e);
+            throw new ScrapErrorException();
         }
 
         return scrapResult;
@@ -83,8 +87,10 @@ public class YahooFinanceScraper implements Scraper {
 
             return CompanyDto.builder().ticker(ticker).name(companyName).build();
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IndexOutOfBoundsException e) {
+            throw new InvalidTickerException(ticker);
+        } catch (IOException e) {
+            throw new ScrapErrorException();
         }
     }
 }

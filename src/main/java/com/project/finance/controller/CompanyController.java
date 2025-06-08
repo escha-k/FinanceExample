@@ -3,12 +3,13 @@ package com.project.finance.controller;
 import com.project.finance.constants.CacheKey;
 import com.project.finance.domain.Company;
 import com.project.finance.dto.CompanyDto;
+import com.project.finance.exception.impl.EmptyTickerException;
 import com.project.finance.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.Trie;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class CompanyController {
     private final Trie<String, String> trie;
 
     private final CompanyService companyService;
-    private final RedisCacheManager redisCacheManager;
+    private final CacheManager cacheManager;
 
     @GetMapping
     @PreAuthorize("hasRole('READ')")
@@ -46,7 +47,7 @@ public class CompanyController {
     public ResponseEntity<CompanyDto> postCompany(@RequestBody CompanyDto companyDto) {
         String ticker = companyDto.getTicker();
         if (ticker.isEmpty()) {
-            throw new IllegalArgumentException("Ticker is empty");
+            throw new EmptyTickerException();
         }
 
         CompanyDto resultDto = companyService.save(ticker);
@@ -65,7 +66,7 @@ public class CompanyController {
     }
 
     private void clearFinanceCache(String companyName) {
-        redisCacheManager.getCache(CacheKey.KEY_FINANCE).evict(companyName);
+        cacheManager.getCache(CacheKey.KEY_FINANCE).evict(companyName);
     }
 
 }

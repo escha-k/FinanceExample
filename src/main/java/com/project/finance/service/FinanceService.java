@@ -6,6 +6,7 @@ import com.project.finance.domain.Dividend;
 import com.project.finance.dto.CompanyDto;
 import com.project.finance.dto.DividendDto;
 import com.project.finance.dto.ScrapResult;
+import com.project.finance.exception.impl.NoCompanyException;
 import com.project.finance.repository.CompanyRepository;
 import com.project.finance.repository.DividendRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,8 @@ public class FinanceService {
 
     @Cacheable(key = "#companyName", value = CacheKey.KEY_FINANCE)
     public ScrapResult getDividendByCompanyName(String companyName) {
-        log.info("search company: {}", companyName);
-
         Company company = companyRepository.findByName(companyName)
-                .orElseThrow(() -> new IllegalArgumentException("Company not found"));
+                .orElseThrow(NoCompanyException::new);
         CompanyDto companyDto = CompanyDto.builder()
                 .name(company.getName())
                 .ticker(company.getTicker())
